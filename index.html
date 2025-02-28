@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Chat Manager 🔥</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #00c3ff;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        #searchBar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #00c3ff;
+            background: #1e1e1e;
+            color: white;
+            outline: none;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input {
+            width: 250px;
+            background: #1e1e1e;
+            color: white;
+            border: 1px solid #00c3ff;
+        }
+
+        button {
+            cursor: pointer;
+            background: #00c3ff;
+            color: white;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff9800;
+        }
+
+        .chat-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chat-card {
+            width: 320px;
+            height: 220px;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .chat-card:hover {
+            background: #292929;
+            border-color: #00c3ff;
+            transform: scale(1.05);
+        }
+
+        .chat-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .chat-card a {
+            text-decoration: none;
+            color: #00c3ff;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .chat-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5px;
+        }
+
+        .chat-actions span {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .delete-btn {
+            color: red;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🔥 Chat Manager 🔥</h2>
+    
+    <input type="text" id="chatName" placeholder="Chat Name">
+    <input type="text" id="chatLink" placeholder="Chat Link" oninput="autoFetchChatTitle()">
+    <button onclick="addChat()">➕ Add Chat</button>
+
+    <input type="text" id="searchBar" placeholder="🔍 Search Chats..." onkeyup="searchChats()">
+
+    <div class="chat-grid" id="chatList"></div>
+
+    <footer>🚀 Made by <b>Pushpak Thakur</b></footer>
+
+    <script>
+        function fetchChats() {
+            let chats = JSON.parse(localStorage.getItem("chats")) || [];
+            const chatList = document.getElementById('chatList');
+            chatList.innerHTML = "";
+
+            chats.forEach((chat, index) => {
+                let div = document.createElement('div');
+                div.classList.add('chat-card');
+
+                div.onclick = function() {
+                    window.open(chat.link, "_blank");
+                };
+
+                let img = document.createElement('img');
+                img.src = "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg"; // Placeholder icon
+                img.alt = "Chat Thumbnail";
+
+                let a = document.createElement('a');
+                a.textContent = chat.name;
+
+                let actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('chat-actions');
+
+                let editSpan = document.createElement('span');
+                editSpan.innerHTML = "✏️";
+                editSpan.onclick = function(event) {
+                    event.stopPropagation();
+                    let newName = prompt("Rename chat:", chat.name);
+                    if (newName) {
+                        chats[index].name = newName;
+                        localStorage.setItem("chats", JSON.stringify(chats));
+                        fetchChats();
+                    }
+                };
+
+                let deleteSpan = document.createElement('span');
+                deleteSpan.innerHTML = "🗑️";
+                deleteSpan.classList.add('delete-btn');
+                deleteSpan.onclick = function(event) {
+                    event.stopPropagation();
+                    if (confirm("Are you sure?")) {
+                        chats.splice(index, 1);
+                        localStorage.setItem("chats", JSON.stringify(chats));
+                        fetchChats();
+                    }
+                };
+
+                actionsDiv.appendChild(editSpan);
+                actionsDiv.appendChild(deleteSpan);
+                div.appendChild(img);
+                div.appendChild(a);
+                div.appendChild(actionsDiv);
+                chatList.appendChild(div);
+            });
+        }
+
+        function addChat() {
+            let name = document.getElementById('chatName').value.trim();
+            let link = document.getElementById('chatLink').value.trim();
+
+            if (name && link) {
+                let chats = JSON.parse(localStorage.getItem("chats")) || [];
+                chats.push({ name, link });
+                localStorage.setItem("chats", JSON.stringify(chats));
+                fetchChats();
+                document.getElementById('chatName').value = "";
+                document.getElementById('chatLink').value = "";
+            } else {
+                alert("⚠️ Please enter both chat name and link!");
+            }
+        }
+
+        function autoFetchChatTitle() {
+            let linkInput = document.getElementById("chatLink").value;
+            let nameInput = document.getElementById("chatName");
+
+            if (linkInput.includes("chat.openai.com") || linkInput.includes("chatgpt.com")) {
+                let iframe = document.createElement('iframe');
+                iframe.style.display = "none";
+                iframe.src = linkInput;
+
+                iframe.onload = function() {
+                    try {
+                        let title = iframe.contentDocument.title;
+                        nameInput.value = title;
+                    } catch (e) {
+                        console.warn("⚠️ Unable to fetch chat title due to security restrictions!");
+                        nameInput.value = "ChatGPT Chat";
+                    }
+                    document.body.removeChild(iframe);
+                };
+
+                document.body.appendChild(iframe);
+            }
+        }
+
+        function searchChats() {
+            let filter = document.getElementById("searchBar").value.toLowerCase();
+            let chatCards = document.getElementsByClassName("chat-card");
+
+            for (let card of chatCards) {
+                let chatName = card.getElementsByTagName("a")[0].textContent.toLowerCase();
+                card.style.display = chatName.includes(filter) ? "flex" : "none";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchChats);
+    </script>
+
+</body>
+</html>
